@@ -130,6 +130,7 @@ dmypy.json
 .pyre/
 
 # Generated Files
+.DS_Store
 .idea/
 .txt
 .log
