@@ -1,0 +1,16 @@
+services: 
+  yt-dlp-web:
+    container_name: yt-dlp-web
+    image: yt-dlp-web
+    build: .
+    privileged: true
+    stdin_open: true
+    ports:
+      - "8081:8081"
+    volumes:
+       - /tmp:/tmp
+    networks:
+      - default
+networks:
+  default:
+    driver: bridge

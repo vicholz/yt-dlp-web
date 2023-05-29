@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+    <head>
+        <title>YouTube Downloader</title>
+    </head>
+    <script>
+        function xhr(url, type, callback){
+            var xhttp=new XMLHttpRequest();
+            xhttp.open(type,url,true);
+            xhttp.send();
+            xhttp.onreadystatechange = function() {
+                if (xhttp.status == 200 && xhttp.readyState == 4){
+                    if (callback){
+                        callback(JSON.parse(xhttp.responseText));
+                    }
+                }
+            }
+        }
+        function xhr_raw(url, type, callback){
+            var xhttp=new XMLHttpRequest();
+            xhttp.open(type,url,true);
+            xhttp.setRequestHeader("Content-Type", "text/yaml;charset=utf-8");
+            xhttp.send();
+            xhttp.onreadystatechange = function() {
+                if (xhttp.status == 200 && xhttp.readyState == 4){
+                    if (callback){ 
+                        callback(xhttp.responseText);
+                    }
+                } else if (xhttp.status == 404) {
+                  document.querySelector("#errors").innerHTML = `<font color='red'><b>ERROR: Could not load ${url}.</b></font>`;
+                }
+            }
+        }
+        function show_throbber(){
+            let div = document.createElement("div");
+            div.id = "working";
+            div.style.opacity = 0.5;
+            div.style.backgroundColor = "black";
+            div.style.top = 0;
+            div.style.left = 0;
+            div.style.width = "100%";
+            div.style.height = "100%";
+            div.style.zIndex = 10000;
+            div.style.position = "absolute";
+            div.innerHTML = '<div style="text-align: center;"><span style="position:absolute; top:50%; color:white; font-size: 75px;">DOWNLOADING</span><div>'
+            document.body.appendChild(div);
+        }
+        function hide_throbber(){
+            document.querySelector("#working").remove()
+            location.reload()
+        }
+        function download_video(url){
+            show_throbber()
+            xhr(`/download?url=${url}`, "GET", hide_throbber)
+        }
+        function get_files(){
+            xhr("/get-files", "GET", show_files)
+        }
+    </script>
+    <body>
+        <div>
+            <label for="input_text_url">URL:</label> <input id="input_text_url" type="text" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" size="100" value=""><button onclick="download_video(document.querySelector('#input_text_url').value)">DOWNLOAD</button>
+        </div>
+        <hr>
+        <div>
+            <table width="80%">
+                <tr>
+                    <td>FILENAME</td><td>SIZE</td><td>DATE CREATED</td><td>ACTIONS</td>
+                </tr>
+                {% for file in files %}
+                <tr id="{{ file.name }}">
+                    <td><a href="{{ file.url }}" download>{{ file.name }}</a></td>
+                    <td>{{ file.size }}</td>
+                    <td>{{ file.date_created }}</td>
+                    <td>
+                        <button onclick="xhr('/delete-file?file={{ file.name }}', 'GET'); this.parentNode.parentNode.remove()">DELETE</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </body>
+</html>
